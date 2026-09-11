@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>菲洛的海洋冒險 Demo v0.9</title>
+<title>菲洛的海洋冒險 Demo v0.9.1</title>
 <style>
 :root{
   --panel: rgba(9,34,51,.86);
@@ -16,9 +16,10 @@
   --danger: #ff8a7a;
 }
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;overflow:hidden;background:#06202e;color:var(--ink);
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;-webkit-touch-callout:none;background:#06202e;color:var(--ink);
   font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei","Heiti TC",sans-serif;
   touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+body{position:fixed;inset:0;width:100%}
 #game{position:fixed;left:0;top:0;display:block;image-rendering:pixelated;image-rendering:crisp-edges;z-index:0}
 .panel{background:var(--panel);border:2px solid var(--edge);border-radius:10px;
   box-shadow:0 0 0 2px rgba(3,18,28,.85),inset 0 0 0 1px rgba(255,255,255,.06)}
@@ -209,7 +210,7 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
   <div><kbd>M</kbd><span>打開地圖</span></div>
   <div><kbd>R</kbd><span>重新開始本區</span></div>
 </div>
-<div id="tag"><b id="tagName">淺潮海藻區</b><span>Demo v0.9</span></div>
+<div id="tag"><b id="tagName">淺潮海藻區</b><span>Demo v0.9.1</span></div>
 
 <div id="touch">
   <div id="joy"><div id="knob"></div></div>
@@ -223,7 +224,7 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 <div id="banner">
   <div class="t" id="bannerT">淺潮海藻區</div>
   <svg viewBox="0 0 200 12" aria-hidden="true"><path d="M3 8 Q 28 0 53 6 T 103 6 T 153 6 T 197 4" stroke="#8fe3ff" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
-  <div class="s">Demo v0.9</div>
+  <div class="s">Demo v0.9.1</div>
 </div>
 <div id="flash"></div>
 
@@ -254,6 +255,10 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 function mk(w, h){const c=document.createElement('canvas');c.width=w;c.height=h;return c;}
 const touchMode = matchMedia('(pointer: coarse)').matches || ('ontouchstart' in window);
 if (touchMode) document.body.classList.add('touch');
+document.addEventListener('touchmove', e => { if (!e.target.closest('.card')) e.preventDefault(); }, {passive:false});
+document.addEventListener('gesturestart', e => e.preventDefault());
+document.addEventListener('dblclick', e => e.preventDefault());
+document.addEventListener('contextmenu', e => e.preventDefault());
 
 /* ================= 像素繪圖工具 ================= */
 function makeSprite(map, pal, flip){
@@ -853,7 +858,7 @@ const labels = $('labels');
 function mkLabel(cls){ const el = document.createElement('div'); el.className = 'lbl ' + cls; labels.appendChild(el); return el; }
 const L = {sign:mkLabel('sign'), zone:mkLabel(''), prompt:mkLabel('')};
 L.zone.innerHTML = '<span></span><small></small>'; L.zoneName = L.zone.querySelector('span'); L.zoneHint = L.zone.querySelector('small');
-let cam = {x:0, y:0}, scale = 2;
+let cam = {x:0, y:0}, scale = 2, camReset = true;
 function toScreen(wx, wy){ return [Math.round((wx - cam.x)*scale), Math.round((wy - cam.y)*scale)]; }
 function place(el, wx, wy){ const [x, y] = toScreen(wx, wy); el.style.transform = `translate(${x}px,${y}px) translate(-50%,-100%)`; }
 function floatText(wx, wy, text, color){
@@ -1067,7 +1072,7 @@ $('mmReset').addEventListener('click', () => {
 let introTimer = null;
 function refreshPortraits(){ portrait($('face'), PROG.lv); portrait($('dface'), PROG.lv); }
 function enterMap(i){
-  CUR = i; M = MAPS[i]; SC = scene(i); S = newState(); particles = []; ambient = [];
+  CUR = i; M = MAPS[i]; SC = scene(i); S = newState(); particles = []; ambient = []; camReset = true;
   dlg.q = []; dlg.open = false; dlg.cur = null; dEl.classList.add('hidden'); ov.classList.add('hidden'); purifyHeld = false;
   PROG.last = i; saveProgress();
   buildTaskList();
@@ -1397,8 +1402,16 @@ function drawPlayer(g){
 }
 function draw(){
   const g = ctx, vw = cv.width, vh = cv.height, p = S.player;
-  cam.x = vw >= 480 ? Math.round((480 - vw)/2) : Math.round(clamp(p.x - vw/2, 0, 480 - vw));
-  cam.y = vh >= 300 ? Math.round((300 - vh)/2) : Math.round(clamp(p.y - vh/2, 0, 300 - vh));
+  const follow = (c, pos, view, world, lo, hi) => {
+    if (view >= world) return Math.round((world - view)/2);
+    if (camReset) c = pos - view/2;
+    else if (pos < c + view*lo) c = pos - view*lo;
+    else if (pos > c + view*hi) c = pos - view*hi;
+    return Math.round(clamp(c, 0, world - view));
+  };
+  cam.x = follow(cam.x, p.x, vw, 480, .3, .7);
+  cam.y = follow(cam.y, p.y, vh, 300, .34, .66);
+  camReset = false;
   g.fillStyle = SC.outside; g.fillRect(0, 0, vw, vh);
   g.save(); g.translate(-cam.x, -cam.y);
   g.drawImage(SC.ground, 0, 0);
