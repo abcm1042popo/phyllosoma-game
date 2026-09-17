@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>菲洛的海洋冒險 Demo v0.9.1</title>
+<title>菲洛的海洋冒險 Demo v1.0</title>
 <style>
 :root{
   --panel: rgba(9,34,51,.86);
@@ -74,11 +74,17 @@ body{position:fixed;inset:0;width:100%}
 @keyframes up{from{opacity:1}to{opacity:0;margin-top:-26px}}
 
 #dialog{position:fixed;z-index:7;right:calc(10px + env(safe-area-inset-right));top:130px;
-  width:min(330px,50vw);display:flex;gap:8px;align-items:center;padding:8px 24px 8px 8px;cursor:pointer}
-#dface{width:36px;height:41px;image-rendering:pixelated;flex:none}
-.who{font-weight:800;font-size:12px;color:#bfeeff;margin-bottom:1px}
-#dtext{margin:0;font-size:14px;line-height:1.5}
-#more{position:absolute;right:9px;bottom:6px;font-size:11px;animation:blink 1s steps(2) infinite}
+  width:min(470px,60vw);display:flex;gap:10px;align-items:center;padding:11px 26px 11px 11px;cursor:pointer}
+#dface{width:44px;height:50px;image-rendering:pixelated;flex:none}
+.who{font-weight:800;font-size:14px;color:#bfeeff;margin-bottom:3px}
+#dtext{margin:0;font-size:21px;line-height:1.85;min-height:2.6em}
+.zy{display:inline-flex;align-items:flex-start;vertical-align:top}
+.zc{line-height:1.15}
+.zb{display:inline-flex;flex-direction:column;align-items:center;font-size:.5em;line-height:1;
+  margin:.06em 2px 0 2px;color:#dff4ff;font-weight:700}
+.zb i{font-style:normal;display:block;height:1.05em}
+.zp{display:inline-block;vertical-align:top;line-height:1.15}
+#more{position:absolute;right:10px;bottom:7px;font-size:12px;animation:blink 1s steps(2) infinite}
 @keyframes blink{50%{opacity:.25}}
 
 #lablogo{position:fixed;z-index:4;left:calc(10px + env(safe-area-inset-left));bottom:calc(14px + env(safe-area-inset-bottom));
@@ -107,9 +113,9 @@ kbd{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 
 #touch{display:none}
 body.touch #touch{display:block}
 body.touch #keys,body.touch #tag{display:none}
-body.touch #dialog{width:min(250px,58vw);padding:7px 22px 7px 10px}
+body.touch #dialog{width:min(340px,92vw);padding:9px 22px 9px 10px}
 body.touch #dface{display:none}
-body.touch #dtext{font-size:13px;line-height:1.45}
+body.touch #dtext{font-size:19px;line-height:1.8}
 #joy{position:fixed;z-index:6;left:calc(18px + env(safe-area-inset-left));bottom:calc(72px + env(safe-area-inset-bottom));
   width:120px;height:120px;border-radius:50%;background:rgba(9,34,51,.55);border:2px solid rgba(143,208,228,.7);touch-action:none}
 #knob{position:absolute;left:50%;top:50%;width:50px;height:50px;margin:-25px 0 0 -25px;border-radius:50%;
@@ -210,7 +216,7 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
   <div><kbd>M</kbd><span>打開地圖</span></div>
   <div><kbd>R</kbd><span>重新開始本區</span></div>
 </div>
-<div id="tag"><b id="tagName">淺潮海藻區</b><span>Demo v0.9.1</span></div>
+<div id="tag"><b id="tagName">淺潮海藻區</b><span>Demo v1.0</span></div>
 
 <div id="touch">
   <div id="joy"><div id="knob"></div></div>
@@ -224,7 +230,7 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 <div id="banner">
   <div class="t" id="bannerT">淺潮海藻區</div>
   <svg viewBox="0 0 200 12" aria-hidden="true"><path d="M3 8 Q 28 0 53 6 T 103 6 T 153 6 T 197 4" stroke="#8fe3ff" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
-  <div class="s">Demo v0.9.1</div>
+  <div class="s">Demo v1.0</div>
 </div>
 <div id="flash"></div>
 
@@ -820,13 +826,15 @@ function newState(){
     items: M.algae.map(([x, y]) => ({type:'algae', x, y, got:false, big:true})).concat(M.bubbles.map(([x, y]) => ({type:'bubble', x, y, got:false, big:true}))),
     extra:[], spawnT:5, over:false, won:false, lowWarned:false, noEnergyWarned:false,
     germs:[[z.x - 30, z.y - 16],[z.x + 18, z.y + 24],[z.x - 8, z.y + 30]].slice(0, M.germs).map(([x, y]) => newGerm(x, y)),
-    inv:0, germWarned:false, hitOnce:false, germSpawnT:20, respawnWarned:false, kills:0,
+    inv:0, germWarned:false, hitOnce:false, eaten:{}, germSpawnT:20, respawnWarned:false, kills:0,
     jelly:{x:M.jelly[0], y:M.jelly[1], tx:M.jelly[0], ty:M.jelly[1], zapCd:0, state:'idle', kills:0, fade:1, respawnT:0}, riding:false, zaps:[],
     cookie:{x:M.cookies[0][0], y:M.cookies[0][1], alive:true, respawn:0, spot:0}, eat:0,
     obsDone:new Set(), archDone:false, archHintT:0, grow:null,
   };
 }
-const ONCE = {ride:false, cookie:false, jellyLeave:false};
+const ONCE = {ride:false, cookie:false, jellyLeave:false, fish:false};
+const FISH_INFO = {Y:{n:'黃色小魚', e:10, o:0}, B:{n:'藍色小魚', e:0, o:8}, D:{n:'岩池小魚', e:6, o:4}, O:{n:'橘色小魚', e:12, o:0}, P:{n:'紫色小魚', e:0, o:12}};
+const FISH_FOOD = 2;
 const JELLY_MAX = 5;
 const NEED = {feed:5, algae:10, bubble:10, purify:2}, ALGAE_ONLY_MAX = 3;
 
@@ -851,6 +859,18 @@ function advance(){
   const d = dlg.cur.done; nextLine(); if (d) d();
 }
 dEl.addEventListener('pointerdown', e => { e.preventDefault(); advance(); });
+const ZY = {"一": "ㄧ", "上": "ㄕㄤˋ", "下": "ㄒㄧㄚˋ", "不": "ㄅㄨˋ", "丑": "ㄔㄡˇ", "丟": "ㄉㄧㄡ", "中": "ㄓㄨㄥ", "久": "ㄐㄧㄡˇ", "也": "ㄧㄝˇ", "乾": "ㄍㄢ", "亂": "ㄌㄨㄢˋ", "了": "ㄌㄜ˙", "二": "ㄦˋ", "五": "ㄨˇ", "些": "ㄒㄧㄝ", "亮": "ㄌㄧㄤˋ", "他": "ㄊㄚ", "以": "ㄧˇ", "任": "ㄖㄣˋ", "伴": "ㄅㄢˋ", "伸": "ㄕㄣ", "但": "ㄉㄢˋ", "住": "ㄓㄨˋ", "作": "ㄗㄨㄛˋ", "來": "ㄌㄞˊ", "供": "ㄍㄨㄥ", "保": "ㄅㄠˇ", "個": "ㄍㄜˋ", "們": "ㄇㄣ˙", "倒": "ㄉㄠˋ", "候": "ㄏㄡˋ", "做": "ㄗㄨㄛˋ", "健": "ㄐㄧㄢˋ", "像": "ㄒㄧㄤˋ", "充": "ㄔㄨㄥ", "先": "ㄒㄧㄢ", "光": "ㄍㄨㄤ", "免": "ㄇㄧㄢˇ", "內": "ㄋㄟˋ", "共": "ㄍㄨㄥˋ", "其": "ㄑㄧˊ", "再": "ㄗㄞˋ", "冒": "ㄇㄠˋ", "出": "ㄔㄨ", "分": "ㄈㄣ", "到": "ㄉㄠˋ", "刺": "ㄘˋ", "動": "ㄉㄨㄥˋ", "務": "ㄨˋ", "化": "ㄏㄨㄚˋ", "區": "ㄑㄩ", "升": "ㄕㄥ", "危": "ㄨㄟˊ", "去": "ㄑㄩˋ", "又": "ㄧㄡˋ", "另": "ㄌㄧㄥˋ", "只": "ㄓˇ", "可": "ㄎㄜˇ", "右": "ㄧㄡˋ", "吃": "ㄔ", "合": "ㄏㄜˊ", "吧": "ㄅㄚ˙", "吸": "ㄒㄧ", "呼": "ㄏㄨ", "命": "ㄇㄧㄥˋ", "和": "ㄏㄜˊ", "哇": "ㄨㄚ", "問": "ㄨㄣˋ", "喔": "ㄛ", "固": "ㄍㄨˋ", "圖": "ㄊㄨˊ", "在": "ㄗㄞˋ", "地": "ㄉㄧˋ", "圾": "ㄙㄜˋ", "垃": "ㄌㄜˋ", "域": "ㄩˋ", "基": "ㄐㄧ", "塊": "ㄎㄨㄞˋ", "塑": "ㄙㄨˋ", "壞": "ㄏㄨㄞˋ", "壯": "ㄓㄨㄤˋ", "壺": "ㄏㄨˊ", "多": "ㄉㄨㄛ", "夠": "ㄍㄡˋ", "夥": "ㄏㄨㄛˇ", "大": "ㄉㄚˋ", "好": "ㄏㄠˇ", "它": "ㄊㄚ", "安": "ㄢ", "完": "ㄨㄢˊ", "定": "ㄉㄧㄥˋ", "容": "ㄖㄨㄥˊ", "察": "ㄔㄚˊ", "實": "ㄕˊ", "對": "ㄉㄨㄟˋ", "小": "ㄒㄧㄠˇ", "少": "ㄕㄠˇ", "就": "ㄐㄧㄡˋ", "層": "ㄘㄥˊ", "岩": "ㄧㄢˊ", "帶": "ㄉㄞˋ", "常": "ㄔㄤˊ", "幫": "ㄅㄤ", "平": "ㄆㄧㄥˊ", "幼": "ㄧㄡˋ", "康": "ㄎㄤ", "彩": "ㄘㄞˇ", "很": "ㄏㄣˇ", "後": "ㄏㄡˋ", "得": "ㄉㄜ˙", "從": "ㄘㄨㄥˊ", "復": "ㄈㄨˋ", "微": "ㄨㄟˊ", "心": "ㄒㄧㄣ", "快": "ㄎㄨㄞˋ", "恢": "ㄏㄨㄟ", "想": "ㄒㄧㄤˇ", "成": "ㄔㄥˊ", "我": "ㄨㄛˇ", "或": "ㄏㄨㄛˋ", "所": "ㄙㄨㄛˇ", "扇": "ㄕㄢˋ", "手": "ㄕㄡˇ", "才": "ㄘㄞˊ", "打": "ㄉㄚˇ", "找": "ㄓㄠˇ", "把": "ㄅㄚˇ", "抱": "ㄅㄠˋ", "拖": "ㄊㄨㄛ", "拱": "ㄍㄨㄥˇ", "持": "ㄔˊ", "按": "ㄢˋ", "捉": "ㄓㄨㄛ", "捕": "ㄅㄨˇ", "掠": "ㄌㄩㄝˋ", "採": "ㄘㄞˇ", "提": "ㄊㄧˊ", "擊": "ㄐㄧˊ", "攀": "ㄆㄢ", "收": "ㄕㄡ", "攻": "ㄍㄨㄥ", "放": "ㄈㄤˋ", "散": "ㄙㄢˋ", "料": "ㄌㄧㄠˋ", "新": "ㄒㄧㄣ", "方": "ㄈㄤ", "易": "ㄧˋ", "是": "ㄕˋ", "時": "ㄕˊ", "暖": "ㄋㄨㄢˇ", "更": "ㄍㄥˋ", "會": "ㄏㄨㄟˋ", "有": "ㄧㄡˇ", "東": "ㄉㄨㄥ", "林": "ㄌㄧㄣˊ", "染": "ㄖㄢˇ", "樣": "ㄧㄤˋ", "次": "ㄘˋ", "正": "ㄓㄥˋ", "殼": "ㄎㄜˊ", "母": "ㄇㄨˇ", "比": "ㄅㄧˇ", "氣": "ㄑㄧˋ", "氧": "ㄧㄤˇ", "水": "ㄕㄨㄟˇ", "汙": "ㄨ", "池": "ㄔˊ", "決": "ㄐㄩㄝˊ", "泡": "ㄆㄠˋ", "洋": "ㄧㄤˊ", "洛": "ㄌㄨㄛˋ", "活": "ㄏㄨㄛˊ", "流": "ㄌㄧㄡˊ", "浮": "ㄈㄨˊ", "海": "ㄏㄞˇ", "消": "ㄒㄧㄠ", "淨": "ㄐㄧㄥˋ", "淺": "ㄑㄧㄢˇ", "清": "ㄑㄧㄥ", "游": "ㄧㄡˊ", "溫": "ㄨㄣ", "溶": "ㄖㄨㄥˊ", "滅": "ㄇㄧㄝˋ", "滿": "ㄇㄢˇ", "漂": "ㄆㄧㄠ", "漬": "ㄗˋ", "潮": "ㄔㄠˊ", "澈": "ㄔㄜˋ", "濕": "ㄕ", "濾": "ㄌㄩˋ", "營": "ㄧㄥˊ", "片": "ㄆㄧㄢˋ", "牠": "ㄊㄚ", "物": "ㄨˋ", "狀": "ㄓㄨㄤˋ", "珊": "ㄕㄢ", "現": "ㄒㄧㄢˋ", "瑚": "ㄏㄨˊ", "生": "ㄕㄥ", "用": "ㄩㄥˋ", "當": "ㄉㄤ", "發": "ㄈㄚ", "的": "ㄉㄜ˙", "盯": "ㄉㄧㄥ", "看": "ㄎㄢˋ", "真": "ㄓㄣ", "石": "ㄕˊ", "碰": "ㄆㄥˋ", "碳": "ㄊㄢˋ", "礎": "ㄔㄨˇ", "秒": "ㄇㄧㄠˇ", "空": "ㄎㄨㄥ", "第": "ㄉㄧˋ", "糕": "ㄍㄠ", "糟": "ㄗㄠ", "紛": "ㄈㄣ", "累": "ㄌㄟˋ", "細": "ㄒㄧˋ", "網": "ㄨㄤˇ", "縫": "ㄈㄥˋ", "繽": "ㄅㄧㄣ", "群": "ㄑㄩㄣˊ", "翅": "ㄔˋ", "者": "ㄓㄜˇ", "耗": "ㄏㄠˋ", "耶": "ㄧㄝ", "胞": "ㄅㄠ", "能": "ㄋㄥˊ", "脫": "ㄊㄨㄛ", "膀": "ㄅㄤˇ", "膠": "ㄐㄧㄠ", "色": "ㄙㄜˋ", "芒": "ㄇㄤˊ", "花": "ㄏㄨㄚ", "菌": "ㄐㄩㄣˋ", "菲": "ㄈㄟ", "葉": "ㄧㄝˋ", "著": "ㄓㄜ˙", "葵": "ㄎㄨㄟˊ", "蔓": "ㄇㄢˋ", "藤": "ㄊㄥˊ", "藻": "ㄗㄠˇ", "蝦": "ㄒㄧㄚ", "螃": "ㄆㄤˊ", "蟹": "ㄒㄧㄝˋ", "行": "ㄒㄧㄥˊ", "表": "ㄅㄧㄠˇ", "袋": "ㄉㄞˋ", "被": "ㄅㄟˋ", "補": "ㄅㄨˇ", "裡": "ㄌㄧˇ", "西": "ㄒㄧ", "要": "ㄧㄠˋ", "觀": "ㄍㄨㄢ", "解": "ㄐㄧㄝˇ", "觸": "ㄔㄨˋ", "話": "ㄏㄨㄚˋ", "認": "ㄖㄣˋ", "誤": "ㄨˋ", "護": "ㄏㄨˋ", "變": "ㄅㄧㄢˋ", "讓": "ㄖㄤˋ", "走": "ㄗㄡˇ", "起": "ㄑㄧˇ", "越": "ㄩㄝˋ", "趕": "ㄍㄢˇ", "趣": "ㄑㄩˋ", "足": "ㄗㄨˊ", "跑": "ㄆㄠˇ", "跟": "ㄍㄣ", "身": "ㄕㄣ", "躲": "ㄉㄨㄛˇ", "較": "ㄐㄧㄠˋ", "近": "ㄐㄧㄣˋ", "退": "ㄊㄨㄟˋ", "這": "ㄓㄜˋ", "進": "ㄐㄧㄣˋ", "過": "ㄍㄨㄛˋ", "達": "ㄉㄚˊ", "選": "ㄒㄩㄢˇ", "避": "ㄅㄧˋ", "邊": "ㄅㄧㄢ", "都": "ㄉㄡ", "釋": "ㄕˋ", "重": "ㄓㄨㄥˋ", "量": "ㄌㄧㄤˋ", "金": "ㄐㄧㄣ", "鈕": "ㄋㄧㄡˇ", "長": "ㄓㄤˇ", "門": "ㄇㄣˊ", "閃": "ㄕㄢˇ", "開": "ㄎㄞ", "間": "ㄐㄧㄢ", "附": "ㄈㄨˋ", "除": "ㄔㄨˊ", "陽": "ㄧㄤˊ", "險": "ㄒㄧㄢˇ", "隻": "ㄓ", "集": "ㄐㄧˊ", "難": "ㄋㄢˊ", "露": "ㄌㄨˋ", "靠": "ㄎㄠˋ", "面": "ㄇㄧㄢˋ", "顆": "ㄎㄜ", "題": "ㄊㄧˊ", "食": "ㄕˊ", "飼": "ㄙˋ", "養": "ㄧㄤˇ", "騎": "ㄑㄧˊ", "髒": "ㄗㄤ", "體": "ㄊㄧˇ", "魚": "ㄩˊ", "鰓": "ㄙㄞ", "黃": "ㄏㄨㄤˊ", "黑": "ㄏㄟ", "點": "ㄉㄧㄢˇ", "龍": "ㄌㄨㄥˊ", "龜": "ㄍㄨㄟ", "等": "ㄉㄥˇ", "於": "ㄩˊ", "橘": "ㄐㄩˊ", "紫": "ㄗˇ", "藍": "ㄌㄢˊ", "種": "ㄓㄨㄥˇ", "類": "ㄌㄟˋ", "同": "ㄊㄨㄥˊ", "咬": "ㄧㄠˇ", "嘴": "ㄗㄨㄟˇ", "巴": "ㄅㄚ", "肚": "ㄉㄨˋ", "子": "ㄗ˙", "飽": "ㄅㄠˇ", "力": "ㄌㄧˋ"};
+function zhuyin(str){
+  let out = '';
+  for (const ch of str){
+    const z = ZY[ch];
+    if (!z){ out += `<span class="zp">${ch}</span>`; continue; }
+    let syms = [...z];
+    if (syms[syms.length - 1] === '˙') syms = ['˙'].concat(syms.slice(0, -1));  // 輕聲放最上面
+    out += `<span class="zy"><span class="zc">${ch}</span><span class="zb">${syms.map(x => `<i>${x}</i>`).join('')}</span></span>`;
+  }
+  return out;
+}
 const ALGAE_LINES = ['採到微藻了！微藻會行光合作用，吸收二氧化碳、釋放氧氣。','微藻是海洋食物網的基礎，很多小動物都靠它們當食物。','微藻收集完成！能量也補充好了。'];
 
 /* ================= 世界標籤 ================= */
@@ -909,7 +929,7 @@ function mount(){
   S.riding = true; p.x = j.x; p.y = j.y - 7; p.vx = p.vy = 0; burst(j.x, j.y, '#d8f4ff', 12);
   if (!ONCE.ride){ ONCE.ride = true;
     say(['抱住水母了！真實的海洋裡，有些龍蝦和扇蝦的葉狀幼體，也會攀附在水母身上一起漂流。',
-      touchMode ? '騎著水母時，水母會用觸手攻擊壞細菌，也會保護我！想下來就點「下來」。' : '騎著水母時，水母會用觸手攻擊壞細菌，也會保護我！想下來就再按一次 E。']); }
+      touchMode ? '騎著水母時，水母會攻擊壞細菌，還會捕到游過的小魚，也會保護我！想下來就點「下來」。' : '騎著水母時，水母會攻擊壞細菌，還會捕到游過的小魚，也會保護我！想下來就再按一次 E。']); }
 }
 function dismount(){
   const j = S.jelly, B = M.bounds; S.riding = false; S.player.y -= 6; S.inv = Math.max(S.inv, .6);
@@ -921,6 +941,26 @@ function eatCookie(){
   if (S.feed === NEED.feed) say(['黃金飼料吃滿 5 顆了！']);
   if (!ONCE.cookie){ ONCE.cookie = true; say(['找到黃金飼料！抱著吃的五秒內，身體會發出黃色光芒，靠近的壞細菌都會被消滅！']); }
   checkWin();
+}
+function eatFish(kind, x, y, key){
+  const inf = FISH_INFO[kind] || {n:'小魚', e:8, o:4};
+  S.eaten[key] = 12;
+  S.algae += FISH_FOOD;
+  S.energy = Math.min(100, S.energy + inf.e); S.oxygen = Math.min(100, S.oxygen + inf.o);
+  burst(x, y, '#ffe27a', 12);
+  floatText(x, y - 8, `${inf.n}　營養 +${FISH_FOOD}`, '#ffe9a0');
+  if (!ONCE.fish){ ONCE.fish = true; say(['水母幫我捕到小魚了！一隻小魚的營養等於 2 顆微藻。', '不同的小魚還會補一點能量或氧氣喔！']); }
+  checkWin();
+}
+function updateFish(dt){
+  for (const k in S.eaten){ S.eaten[k] -= dt; if (S.eaten[k] <= 0) delete S.eaten[k]; }
+  if (!S.riding || S.over || S.won) return;
+  const jx = S.player.x, jy = S.player.y + 7, r = 13 + lvl();
+  SC.schools.forEach((sc, si) => sc.f.forEach(([ox, oy], fi) => {
+    const key = si + '_' + fi; if (S.eaten[key]) return;
+    const fx = sc.x + ox + 3, fy = sc.y + oy + Math.sin(S.t*2 + ox)*1.5 + 1;
+    if (dist(jx, jy, fx, fy) < r) eatFish(sc.k, fx, fy, key);
+  }));
 }
 function killGerm(b, color){ b.alive = false; S.kills++; burst(b.x, b.y, color || '#c98af0', 16); floatText(b.x, b.y - 10, '消滅！', '#fff3a0'); }
 function collect(it){
@@ -1247,6 +1287,7 @@ function update(dt){
     if (S.oxygen <= 0){ S.oxygen = 0; S.over = true; showLose(); }
   }
   updateJelly(dt);
+  updateFish(dt);
   updateGerms(dt);
 
   S.purifying = false;
@@ -1295,7 +1336,7 @@ function update(dt){
     const s = dlg.cur.s;
     if (dlg.n < s.length) dlg.n = Math.min(s.length, dlg.n + dt*28);
     else { dlg.hold += dt; if (dlg.hold > 2.4 + s.length*.035) advance(); }
-    if (dlg.open){ dText.textContent = dlg.cur.s.slice(0, Math.floor(dlg.n)); dMore.style.visibility = dlg.q.length ? 'visible' : 'hidden'; }
+    if (dlg.open){ const shown = dlg.cur.s.slice(0, Math.floor(dlg.n)); if (dText._s !== shown){ dText._s = shown; dText.innerHTML = zhuyin(shown); } dMore.style.visibility = dlg.q.length ? 'visible' : 'hidden'; }
   }
   updHud();
 }
@@ -1452,7 +1493,15 @@ function draw(){
   g.globalAlpha = 1;
   g.fillStyle = 'rgba(215,248,255,.65)';
   for (const b of ambient) g.fillRect(Math.round(b.x + Math.sin(S.t*2 + b.w)*1.5), Math.round(b.y), b.s, b.s);
-  for (const sc of SC.schools){ const spr = FISH[sc.k][sc.dir > 0 ? 0 : 1]; for (const [ox, oy] of sc.f) g.drawImage(spr, Math.round(sc.x + ox), Math.round(sc.y + oy + Math.sin(S.t*2 + ox)*1.5)); }
+  SC.schools.forEach((sc, si) => {
+    const spr = FISH[sc.k][sc.dir > 0 ? 0 : 1];
+    sc.f.forEach(([ox, oy], fi) => {
+      if (S.eaten[si + '_' + fi]) return;
+      const fx = Math.round(sc.x + ox), fy = Math.round(sc.y + oy + Math.sin(S.t*2 + ox)*1.5);
+      if (S.riding && dist(S.player.x, S.player.y + 7, fx + 3, fy + 1) < 34) glow(g, fx + 3, fy + 1, 9, 'rgba(255,230,120,.35)');
+      g.drawImage(spr, fx, fy);
+    });
+  });
   g.restore();
   for (let i = 0; i < 4; i++){
     const x = vw*(.42 + i*.15) + Math.sin(S.t*.25 + i*1.7)*12, a = (.04 + .02*Math.sin(S.t*.6 + i))*SC.rays;
